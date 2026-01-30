@@ -1,0 +1,315 @@
+{
+  "name": "Data Analyst",
+  "nodes": [
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        224
+      ],
+      "id": "d34baec3-4e9c-45f2-a50e-eb142938fe3a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_u5xRJp4Utr6qKak7Ovq9iKR8B2a8Ir6GUyj6oAM2UU",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_u5xRJp4Utr6qKak7Ovq9iKR8B2a8Ir6GUyj6oAM2UU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LinkedIn",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_u5xRJp4Utr6qKak7Ovq9iKR8B2a8Ir6GUyj6oAM2UU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        416,
+        160
+      ],
+      "id": "6d7ac328-7bfc-4985-b7f8-e755fe35eeea",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7QpMDNA7WJrQu0xK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "muqadasejaz3@gmail.com",
+        "subject": "Data Analysis",
+        "message": "=<div style=\"font-family: Arial, sans-serif; color: #333;\">\n\n  <h2>📊 Data Analysis Summary</h2>\n\n  <div style=\"background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; font-size: 0.95em; line-height: 1.5;\">\n    {{ $json.message }}\n  </div>\n\n  <table cellspacing=\"10\" cellpadding=\"0\" border=\"0\" style=\"width: 100%;\">\n    <tr>\n      <td align=\"center\" valign=\"top\" style=\"width: 33%;\">\n        <h3>📈 Line Chart</h3>\n        <img src=\"{{ $json.chartLineUrl }}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\">\n      </td>\n      <td align=\"center\" valign=\"top\" style=\"width: 33%;\">\n        <h3>📊 Bar Chart</h3>\n        <img src=\"{{ $json.chartBarUrl }}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\">\n      </td>\n      <td align=\"center\" valign=\"top\" style=\"width: 33%;\">\n        <h3>🧩 Pie Chart</h3>\n        <img src=\"{{ $json.chartPieUrl }}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\">\n      </td>\n    </tr>\n  </table>\n\n  <p style=\"font-size: 0.9em; color: #888;\">Generated automatically by your AI analysis assistant 🚀</p>\n\n</div>\n\n\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "5a82751d-3786-43d8-9c59-5d194d2cba0f",
+      "name": "Send a message",
+      "webhookId": "03d6f4d7-9ade-4ec8-bfb3-64112a36c179",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CM6pXRF6Db28B6fD",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawOutput = items[0].json.output;\n\n\nrawOutput = rawOutput.replace(/```json\\s*|\\s*```/g, '');  \nrawOutput = rawOutput.replace(/^json\\s*/, '');           \n\n\nlet parsed = {};\ntry {\n  const firstParse = JSON.parse(rawOutput);\n  if (typeof firstParse === 'string') {\n    parsed = JSON.parse(firstParse);\n  } else {\n    parsed = firstParse;\n  }\n} catch (err) {\n  throw new Error('Failed to parse AI Agent output as JSON: ' + err.message);\n}\n\n\nreturn [\n  {\n    json: {\n      labels: parsed.labels ?? [],\n      values: parsed.values ?? []\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "18d3e6e7-fb2e-492a-8d63-4406ef0c81c0",
+      "name": "Clean Data"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('When chat message received').item.json.chatInput }}\n{{ $('AI Agent').item.json.output }}"
+            },
+            {
+              "content": "=You are a professional data analyst assistant specializing in executive, leadership, and technical talent profiles.\n\nYou will receive two arrays:\n1️⃣ An array of field labels (e.g. [\"name\", \"role\", \"companyName\", \"linkedinUrl\"])\n2️⃣ An array of values, where each inner array represents one matching record/row in the same order as the labels (e.g. [[\"Sundar Pichai\", \"CEO at Google\", \"Google\", \"https://linkedin.com/in/sundarpichai\"], ...])\n\nYour task is to analyze this small dataset of professional profiles and generate a clear, natural-language summary suitable for inclusion in a professional email, report, or talent brief.\n\nYour summary must:\n- Begin with a general overview: how many profiles were found and the main criteria used (e.g., CEOs, AI Engineers, specific company, etc.)\n- Highlight 1–3 most notable individuals (name + role + company), focusing on relevance to the query\n- Mention any interesting patterns or observations (e.g., company concentration, role seniority levels, industry focus, technical vs leadership balance)\n- If the result is empty, politely state that no matching profiles were found based on the criteria\n- If only one profile matches, describe that person concisely and highlight key details\n\nStyle:\n- Professional, polished, confident English\n- 3–5 concise sentences\n- No formatting, markdown, bullet points, JSON, or technical structures — plain text narrative only\n\nExample 1 — CEOs (leadership role):\n\"Three high-profile CEOs were identified in the dataset. Sundar Pichai leads Google as CEO, Chris Nassetta serves as President and CEO of Hilton, and Bill Ready is the CEO of Pinterest. These executives represent major players in technology, hospitality, and social media, showcasing a strong concentration of leadership talent in prominent global companies.\"\n\nExample 2 — AI Engineer (technical/specialized role):\n\"Two AI engineering professionals were matched in the dataset. Dr. Elena Vasquez is an AI Engineer at OpenAI, specializing in large language model optimization, while Raj Patel serves as Senior AI Engineer at Anthropic with a focus on safety-aligned systems. Both individuals are affiliated with leading frontier AI labs, indicating a high concentration of specialized machine learning talent in cutting-edge research organizations.\"\n\nExample 3 — Mixed/varied roles (e.g., query like \"find CTOs\" or \"technology executives\"):\n\"Four technology executives were identified across different seniority levels. Sarah Chen serves as CTO at Scale AI, driving infrastructure for data labeling platforms, while Michael Torres is Head of AI Engineering at Databricks. The group also includes a VP of Machine Learning at Snowflake and a Director of AI Research at Meta. This distribution highlights strong demand for AI and data expertise across enterprise and research-oriented tech companies.\"\n\nDo NOT output JSON or any technical data structures — plain English narrative only.",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        832,
+        0
+      ],
+      "id": "ae76380a-a30a-4ade-9abd-6d590dd466ab",
+      "name": "Write Report",
+      "credentials": {
+        "openAiApi": {
+          "id": "kXnJpm8pJO1LTctc",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// === n8n Code node - Group by company, generate charts, and include GPT summary ===\n\n// Get data from previous node (expected format: { labels: [...], values: [[...], [...]] })\nconst labels = $('Clean Data').first()?.json?.labels || [];\nconst values = $('Clean Data').first()?.json?.values || [];\n\n// Get the GPT summary content from previous node\nconst gptContent = $('Write Report').first()?.json?.message?.content || 'No summary available';\n\n// ────────────────────────────────────────────────\n// 1. Find the company column\n// ────────────────────────────────────────────────\nlet companyIdx = labels.findIndex(l => \n  ['companyName', 'company', 'organization', 'firm', 'employer'].some(t => \n    l.toLowerCase().includes(t.toLowerCase())\n  )\n);\n\nif (companyIdx === -1 && labels.length > 0) {\n  companyIdx = 0; // fallback: first column\n}\n\nconst companyCounts = {};\n\nvalues.forEach(row => {\n  if (!Array.isArray(row) || row.length <= companyIdx) return;\n  \n  let company = (row[companyIdx] || '').toString().trim();\n  if (!company) company = 'Unknown / Not Specified';\n  \n  companyCounts[company] = (companyCounts[company] || 0) + 1;\n});\n\n// Prepare chart-ready data\nconst companies = Object.keys(companyCounts);\nconst counts = Object.values(companyCounts);\n\n// If no data → return placeholder info\nif (companies.length === 0) {\n  return [{\n    json: {\n      chartBarUrl: '',\n      chartLineUrl: '',\n      chartPieUrl: '',\n      message: gptContent,\n      count: 0\n    }\n  }];\n}\n\n// ────────────────────────────────────────────────\n// 2. BAR CHART\n// ────────────────────────────────────────────────\nconst barConfig = {\n  type: 'bar',\n  data: {\n    labels: companies,\n    datasets: [{\n      label: 'Number of people',\n      data: counts,\n      backgroundColor: 'rgba(54, 162, 235, 0.7)',\n      borderColor: 'rgba(54, 162, 235, 1)',\n      borderWidth: 1\n    }]\n  },\n  options: {\n    indexAxis: 'x',\n    scales: {\n      y: { beginAtZero: true, title: { display: true, text: 'Count' } },\n      x: { title: { display: true, text: 'Company' } }\n    },\n    plugins: {\n      legend: { display: false },\n      title: { display: true, text: 'Matching profiles by Company' }\n    }\n  }\n};\n\nconst chartBarUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(barConfig))}`;\n\n// ────────────────────────────────────────────────\n// 3. LINE CHART\n// ────────────────────────────────────────────────\nconst lineConfig = JSON.parse(JSON.stringify(barConfig));\nlineConfig.type = 'line';\nlineConfig.data.datasets[0].fill = false;\nlineConfig.data.datasets[0].tension = 0.2;\nlineConfig.options.plugins.title.text = 'Matching profiles by Company (Line)';\n\nconst chartLineUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(lineConfig))}`;\n\n// ────────────────────────────────────────────────\n// 4. PIE CHART\n// ────────────────────────────────────────────────\nconst pieConfig = {\n  type: 'pie',\n  data: {\n    labels: companies,\n    datasets: [{\n      data: counts,\n      backgroundColor: [\n        '#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0',\n        '#9966FF', '#FF9F40', '#E7E9ED', '#C9CBCF',\n        '#F7464A', '#46BFBD'\n      ]\n    }]\n  },\n  options: {\n    plugins: {\n      legend: { position: 'right' },\n      title: { display: true, text: 'Matching profiles – Company Distribution' }\n    }\n  }\n};\n\nconst chartPieUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(pieConfig))}`;\n\n// ────────────────────────────────────────────────\n// Return everything including GPT summary\n// ────────────────────────────────────────────────\nreturn [{\n  json: {\n    chartBarUrl,\n    chartLineUrl,\n    chartPieUrl,\n    companiesCount: companies.length,\n    totalMatches: values.length,\n    topCompany: companies.length > 0 ? companies[counts.indexOf(Math.max(...counts))] : null,\n    message: gptContent //  include the summary content here\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "8b69fe29-65db-41ba-9f3c-381f96c53a86",
+      "name": "Write HTML"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c60c6613-fa19-422a-b815-40b8751778e7",
+      "name": "When chat message received",
+      "webhookId": "85c290ce-bc5d-4ee9-9d7e-ed12c09359d3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        240
+      ],
+      "id": "36718c6c-b686-4f76-a323-954ccad5148b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kXnJpm8pJO1LTctc",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a professional search assistant for job titles, roles, and locations.\n\nThe user will give a natural-language query such as:\n- \"AI Engineer in Islamabad\"\n- \"CEOs in Netherlands\"\n- \"Software Developers in Karachi\"\n- \"Marketing Managers in Dubai\"\n- \"Founders in Berlin\"\n\nYour task:\n1. Interpret the user's request to extract the main filters:\n   - Job title / role (e.g. \"AI Engineer\", \"CEO\", \"Software Developer\", \"Marketing Manager\", \"Founder\")\n   - Location (city, country, region — e.g. \"Islamabad\", \"Netherlands\", \"Karachi\", \"Dubai\", \"Berlin\")\n   - Any other visible constraints (company size, experience level, remote/onsite, etc. — if mentioned)\n\n2. The data is stored in a Google Sheet with columns such as (but not limited to):\n   - Name\n   - Job Title / Role\n   - Company\n   - Location (city and/or country)\n   - LinkedIn URL\n   - Email (if available)\n   - Experience (years or description)\n   - Other relevant fields\n\n3. Select the most relevant columns to return as \"labels\" (usually 4–6 fields max):\n   - Prioritize: Name, Job Title / Role, Company, Location, LinkedIn URL\n   - Add Email or Experience only if clearly relevant to the query\n\n4. Prepare two arrays:\n   - \"labels\": array of selected column names (strings)\n   - \"values\": array of arrays — each inner array is one matching person's data in the exact order of the labels\n\n5. If no matches are found, return empty arrays: {\"labels\": [], \"values\": []}\n\n6. Always return **only** a valid JSON object — nothing else.\n   - No markdown, no explanations, no code blocks, no backticks, no extra text, no greetings.\n\nYou must return valid JSON only.\n\nExample output for query \"CEOs in Netherlands\":\n{\"labels\": [\"Name\", \"Job Title\", \"Company\", \"Location\", \"LinkedIn\"], \"values\": [[\"Jan de Vries\", \"CEO\", \"TechNL B.V.\", \"Amsterdam, Netherlands\", \"https://linkedin.com/in/jandevries\"], [\"Sophie Bakker\", \"Chief Executive Officer\", \"GreenEnergy NL\", \"Rotterdam, Netherlands\", \"https://linkedin.com/in/sophiebakker\"]]}\n\nDo not include any explanations or formatting."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        -16
+      ],
+      "id": "20d7d297-1bd7-4c39-97b4-c3d402d024a4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a professional search assistant for job titles, roles, and locations.\n\nThe user will give a natural-language query such as:\n- \"AI Engineer in Islamabad\"\n- \"CEOs in Netherlands\"\n- \"Software Developers in Karachi\"\n- \"Marketing Managers in Dubai\"\n- \"Founders in Berlin\"\n\nYour task:\n1. Interpret the user's request to extract the main filters:\n   - Job title / role (e.g. \"AI Engineer\", \"CEO\", \"Software Developer\", \"Marketing Manager\", \"Founder\")\n   - Location (city, country, region — e.g. \"Islamabad\", \"Netherlands\", \"Karachi\", \"Dubai\", \"Berlin\")\n   - Any other visible constraints (company size, experience level, remote/onsite, etc. — if mentioned)\n\n2. The data is stored in a Google Sheet with columns such as (but not limited to):\n   - Name\n   - Job Title / Role\n   - Company\n   - Location (city and/or country)\n   - LinkedIn URL\n   - Email (if available)\n   - Experience (years or description)\n   - Other relevant fields\n\n3. Select the most relevant columns to return as \"labels\" (usually 4–6 fields max):\n   - Prioritize: Name, Job Title / Role, Company, Location, LinkedIn URL\n   - Add Email or Experience only if clearly relevant to the query\n\n4. Prepare two arrays:\n   - \"labels\": array of selected column names (strings)\n   - \"values\": array of arrays — each inner array is one matching person's data in the exact order of the labels\n\n5. If no matches are found, return empty arrays: {\"labels\": [], \"values\": []}\n\n6. Always return **only** a valid JSON object — nothing else.\n   - No markdown, no explanations, no code blocks, no backticks, no extra text, no greetings.\n\nYou must return valid JSON only.\n\nExample output for query \"CEOs in Netherlands\":\n{\"labels\": [\"Name\", \"Job Title\", \"Company\", \"Location\", \"LinkedIn\"], \"values\": [[\"Jan de Vries\", \"CEO\", \"TechNL B.V.\", \"Amsterdam, Netherlands\", \"https://linkedin.com/in/jandevries\"], [\"Sophie Bakker\", \"Chief Executive Officer\", \"GreenEnergy NL\", \"Rotterdam, Netherlands\", \"https://linkedin.com/in/sophiebakker\"]]}\n\nDo not include any explanations or formatting."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -640
+      ],
+      "id": "1791e31a-edca-4f7f-a992-a319ff36a20b",
+      "name": "Data Analyst"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Data": {
+      "main": [
+        [
+          {
+            "node": "Write Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Report": {
+      "main": [
+        [
+          {
+            "node": "Write HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write HTML": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Analyst": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "6b435e0a-d625-4d9e-ba7b-a2c1112e19ee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c544d22e690d204287ffa59ea888305c0159a92d46d45f414a572e439d4adf1"
+  },
+  "id": "eueQyuk0cI4HTWpq1zvG6",
+  "tags": []
+}
